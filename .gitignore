@@ -1,0 +1,20 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VS Code
+.vscode/
+
+# Distribución
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
