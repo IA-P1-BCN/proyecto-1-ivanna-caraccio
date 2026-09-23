@@ -29,9 +29,8 @@ Link al proyecto: https://github.com/orgs/IA-P1-BCN/projects/13
 - Se crea un fichero `README.md` inicial con descripción del proyecto, cómo instalarlo y cómo ejecutarlo.
 - Se configura el proyecto en Visual Studio Code: `.vscode/settings.json` con el intérprete de Python del entorno virtual, y recomendaciones de extensiones (`.vscode/extensions.json`).
 - Se añade configuración base de calidad de código (linter tipo `flake8`/`ruff` y formateador tipo `black`), coherente con los principios SOLID/DRY exigidos.
-- Se crea un fichero de configuración inicial en `taximeter/config` con las tarifas vigentes (0.02 €/s parado, 0.05 €/s en movimiento) como placeholder para US-07.
+- Se crea un fichero de configuración inicial en `config/` con las tarifas vigentes (0.02 €/s parado, 0.05 €/s en movimiento) como placeholder para US-07.
 - Se deja preparada la carpeta `tests/` con un test dummy que se ejecute correctamente (para validar que el framework de testing, p. ej. `pytest`, está operativo).
-- El commit inicial ("scaffolding") queda subido al repositorio remoto y es accesible por todo el equipo.
 
 ---
 
