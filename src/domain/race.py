@@ -1,6 +1,7 @@
 from datetime import datetime
 from race_status import RaceStatus
 from rate_segment import RateSegment
+from rates import RATE_PER_SECOND
 
 
 class Race:
@@ -20,3 +21,17 @@ class Race:
     @property
     def current_rate_segment(self):
         return self._rate_segments[-1]
+
+    @property
+    def get_current_amount(self):
+        now = datetime.now()
+        total = 0.0
+
+        for segment in self._rate_segments:
+            segment_end = segment.end_time if segment.end_time is not None else now
+            seconds_in_segment = (
+                segment_end - segment.start_time).total_seconds()
+            price_per_second = RATE_PER_SECOND[segment.status]
+            total += seconds_in_segment * price_per_second
+
+        return total
