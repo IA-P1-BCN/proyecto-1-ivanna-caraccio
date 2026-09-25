@@ -1,7 +1,7 @@
 from datetime import datetime
-from race_status import RaceStatus
-from rate_segment import RateSegment
-from rates import RATE_PER_SECOND
+from .race_status import RaceStatus
+from .rate_segment import RateSegment
+from .rates import RATE_PER_SECOND
 
 
 class Race:
@@ -23,6 +23,9 @@ class Race:
         return self._rate_segments[-1]
 
     @property
+    def rate_segments(self):
+        return list(self._rate_segments)
+
     def get_current_amount(self):
         now = datetime.now()
         total = 0.0

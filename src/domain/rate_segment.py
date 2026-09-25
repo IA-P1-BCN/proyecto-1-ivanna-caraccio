@@ -1,4 +1,4 @@
-from race_status import RaceStatus
+from .race_status import RaceStatus
 
 
 class RateSegment:
