@@ -1,0 +1,14 @@
+[project]
+name = "taximeter"
+version = "0.1.0"
+description = "Prototipo de taxímetro software"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
