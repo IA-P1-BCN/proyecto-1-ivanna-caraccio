@@ -38,3 +38,13 @@ class Race:
             total += seconds_in_segment * price_per_second
 
         return total
+    
+    def change_status(self, new_status):
+        if new_status == self._status: return
+        
+        now = datetime.now()
+        self.current_rate_segment.close(now)
+        self._status = new_status
+        new_segment = RateSegment(new_status, now)
+        self._rate_segments.append(new_segment)
+        
