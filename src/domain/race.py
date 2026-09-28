@@ -7,6 +7,7 @@ from .rates import RATE_PER_SECOND
 class Race:
     def __init__(self):
         self._start_time = datetime.now()
+        self._end_time = None
         self._status = RaceStatus.STOPPED
         self._rate_segments = [RateSegment(self._status, self._start_time)]
 
@@ -15,9 +16,17 @@ class Race:
         return self._start_time
 
     @property
+    def end_time(self):
+        return self._end_time
+    
+    @property
     def status(self):
         return self._status
 
+    @property
+    def is_active(self):
+        return self._end_time is None
+    
     @property
     def current_rate_segment(self):
         return self._rate_segments[-1]
@@ -36,7 +45,14 @@ class Race:
 
         return total
     
+    def get_duration_seconds(self):
+        now = datetime.now()
+        return sum(s.get_duration_seconds(now) for s in self._rate_segments)
+    
     def change_status(self, new_status):
+        if not self.is_active:
+            raise ValueError("No se puede cambiar el estado a una carrera terminada.")
+        
         if new_status == self._status: return
         
         now = datetime.now()
@@ -45,3 +61,10 @@ class Race:
         new_segment = RateSegment(new_status, now)
         self._rate_segments.append(new_segment)
         
+    def finish(self):
+        if not self.is_active:
+            raise ValueError("La carrera ya terminó.")
+        
+        now = datetime.now()
+        self.current_rate_segment.close(now)
+        self._end_time = now 
