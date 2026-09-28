@@ -3,10 +3,13 @@ from pathlib import Path
 
 from infrastructure.logging_config import get_logger, setup_logging
 from infrastructure.race_history_repository import RaceHistoryRepository
+from infrastructure.rates_config import RatesConfig
 from interfaces.cli import Cli
 
 HISTORY_FILE = Path(__file__).resolve().parent.parent / \
     "data" / "race_history.json"
+RATES_FILE = Path(__file__).resolve().parent.parent / \
+    "config" / "rates.json"
 
 logger = get_logger(__name__)
 
@@ -15,10 +18,14 @@ def main():
     setup_logging()
     logger.info("Application started")
 
+    rates = RatesConfig(RATES_FILE).load()
+    logger.info("Rates loaded: stopped=%s moving=%s",
+                rates.stopped, rates.moving)
+
     repository = RaceHistoryRepository(HISTORY_FILE)
 
     try:
-        Cli(repository).run()
+        Cli(repository, rates).run()
     except KeyboardInterrupt:
         logger.info("Application interrupted by the user")
     except Exception:

@@ -36,9 +36,9 @@ def read_key():
 
 
 class Cli:
-    def __init__(self, repository):
+    def __init__(self, repository, rates=None):
         self.session = RaceSession()
-        self.start_race = StartRace(self.session)
+        self.start_race = StartRace(self.session, rates)
         self.change_race_status = ChangeRaceStatus(self.session)
         self.finish_race = FinishRace(self.session, repository)
         self.get_today_history = GetTodayHistory(repository)
