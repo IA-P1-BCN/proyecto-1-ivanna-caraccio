@@ -31,10 +31,17 @@ class Race:
         total = 0.0
 
         for segment in self._rate_segments:
-            segment_end = segment.end_time if segment.end_time is not None else now
-            seconds_in_segment = (
-                segment_end - segment.start_time).total_seconds()
             price_per_second = RATE_PER_SECOND[segment.status]
-            total += seconds_in_segment * price_per_second
+            total += segment.get_duration_seconds(now) * price_per_second
 
         return total
+    
+    def change_status(self, new_status):
+        if new_status == self._status: return
+        
+        now = datetime.now()
+        self.current_rate_segment.close(now)
+        self._status = new_status
+        new_segment = RateSegment(new_status, now)
+        self._rate_segments.append(new_segment)
+        
