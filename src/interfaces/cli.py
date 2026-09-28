@@ -4,7 +4,9 @@ import time
 from application.race_session import RaceSession
 from application.start_race import StartRace
 from application.change_race_status import ChangeRaceStatus
+from application.finish_race import FinishRace
 from domain.race_status import RaceStatus
+from .formatting import format_amount, format_duration
 
 ARROW_PREFIXES = ("\x00", "\xe0")
 CODE_UP = "H"
@@ -30,13 +32,14 @@ class Cli:
     def __init__(self):
         self.session = None
         self.change_race_status = None
+        self.finish_race = None
     
     def run(self):
         while True:
-            print("\n=== TAXIMETER ===")
+            print("\n=== TAXITECH ===")
             print("1. Iniciar carrera")
             print("2. Salir")
-            choice = input("Elige una opción: ").strip()
+            choice = input("Elige una opción (número): ").strip()
 
             if choice == "1":
                 self._start_race_flow()
@@ -50,7 +53,8 @@ class Cli:
         self.session = RaceSession()
         start_race = StartRace(self.session)
         self.change_race_status = ChangeRaceStatus(self.session)
-
+        self.finish_race = FinishRace(self.session)
+        
         start_race.execute()
         self._run_race_screen()
 
@@ -64,6 +68,9 @@ class Cli:
 
             if key == "q":
                 print()
+                race = self.finish_race.execute()
+                if race is not None:
+                    self._show_summary(race)
                 break
 
             key_changed_status = False
@@ -87,6 +94,13 @@ class Cli:
 
     def _draw_status(self):
         race = self.session.active_race
-        amount = race.get_current_amount()
-        line = f"Estado: {race.status.value:<8} | Cantidad: {amount:.2f} €"
+        amount = format_amount(race.get_current_amount())
+        line = f"Estado: {race.status.value:<8} | Cantidad: {amount} €"
         print("\r" + line + " " * 10, end="", flush=True)
+
+    def _show_summary(self, race):
+        print("\n--- CARRERA FINALIZADA ---")
+        print(f"Inicio:    {race.start_time:%H:%M:%S}")
+        print(f"Fin:      {race.end_time:%H:%M:%S}")
+        print(f"Duración: {format_duration(race.get_duration_seconds())}")
+        print(f"TOTAL:    {format_amount(race.get_current_amount())}")
