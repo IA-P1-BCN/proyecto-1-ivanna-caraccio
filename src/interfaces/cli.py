@@ -1,13 +1,17 @@
 import msvcrt
 import time
 
-from application.race_session import RaceSession
-from application.start_race import StartRace
 from application.change_race_status import ChangeRaceStatus
 from application.finish_race import FinishRace
 from application.get_today_history import GetTodayHistory
+from application.race_session import RaceSession
+from application.start_race import StartRace
 from domain.race_status import RaceStatus
+from infrastructure.logging_config import get_logger
+
 from .formatting import format_amount, format_duration
+
+logger = get_logger(__name__)
 
 ARROW_PREFIXES = ("\x00", "\xe0")
 CODE_UP = "H"
@@ -48,22 +52,33 @@ class Cli:
             choice = input("Elige una opción (número): ").strip()
 
             if choice == "1":
-                self._start_race_flow()
+                self._safe(self._start_race_flow)
             elif choice == "2":
-                self._show_history()
+                self._safe(self._show_history)
             elif choice == "3":
+                logger.info("Exit option chosen by the user")
                 print("Cerrando el programa...")
                 break
             else:
                 print("Opción no válida.")
+
+    @staticmethod
+    def _safe(action):
+        try:
+            action()
+        except Exception:
+            logger.exception("Unexpected error while running %s",
+                             action.__name__)
+            print("\nSe ha producido un error. "
+                  "Consulta el fichero de log para más detalles.")
 
     def _start_race_flow(self):
         self.start_race.execute()
         self._run_race_screen()
 
     def _run_race_screen(self):
-        print(
-            "Flecha arriba = en movimiento | Flecha abajo = parado | Q = Terminar carrera\n")
+        print("Flecha arriba = en movimiento | Flecha abajo = parado | "
+              "Q = Terminar carrera\n")
 
         last_refresh = 0
 
