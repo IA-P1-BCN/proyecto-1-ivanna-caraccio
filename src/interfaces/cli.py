@@ -30,9 +30,10 @@ def read_key():
 
 class Cli:
     def __init__(self):
-        self.session = None
-        self.change_race_status = None
-        self.finish_race = None
+        self.session = RaceSession()
+        self.start_race = StartRace(self.session)
+        self.change_race_status = ChangeRaceStatus(self.session)
+        self.finish_race = FinishRace(self.session)
     
     def run(self):
         while True:
@@ -50,12 +51,7 @@ class Cli:
                 print("Opción no válida.")
 
     def _start_race_flow(self):
-        self.session = RaceSession()
-        start_race = StartRace(self.session)
-        self.change_race_status = ChangeRaceStatus(self.session)
-        self.finish_race = FinishRace(self.session)
-        
-        start_race.execute()
+        self.start_race.execute()
         self._run_race_screen()
 
     def _run_race_screen(self):

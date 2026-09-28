@@ -1,8 +1,4 @@
 class FinishRace:
-    """
-    Use case: finishes the active race.
-    """
-
     def __init__(self, session):
         self.session = session
 
@@ -14,5 +10,6 @@ class FinishRace:
             return None
 
         race.finish()
-        self.session.active_race = None  # free the session for a new race
+        self.session.finished_races.append(race)
+        self.session.active_race = None
         return race
