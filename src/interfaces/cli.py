@@ -30,9 +30,10 @@ def read_key():
 
 class Cli:
     def __init__(self):
-        self.session = None
-        self.change_race_status = None
-        self.finish_race = None
+        self.session = RaceSession()
+        self.start_race = StartRace(self.session)
+        self.change_race_status = ChangeRaceStatus(self.session)
+        self.finish_race = FinishRace(self.session)
     
     def run(self):
         while True:
@@ -50,16 +51,11 @@ class Cli:
                 print("Opción no válida.")
 
     def _start_race_flow(self):
-        self.session = RaceSession()
-        start_race = StartRace(self.session)
-        self.change_race_status = ChangeRaceStatus(self.session)
-        self.finish_race = FinishRace(self.session)
-        
-        start_race.execute()
+        self.start_race.execute()
         self._run_race_screen()
 
     def _run_race_screen(self):
-        print("Flecha arriba = en movimiento | Flecha abajo = parado | Q = salir\n")
+        print("Flecha arriba = en movimiento | Flecha abajo = parado | Q = Terminar carrera\n")
 
         last_refresh = 0
 
@@ -95,7 +91,7 @@ class Cli:
     def _draw_status(self):
         race = self.session.active_race
         amount = format_amount(race.get_current_amount())
-        line = f"Estado: {race.status.value:<8} | Cantidad: {amount} €"
+        line = f"Estado: {race.status.value:<8} | Cantidad: {amount}"
         print("\r" + line + " " * 10, end="", flush=True)
 
     def _show_summary(self, race):
