@@ -1,6 +1,3 @@
-from .race_status import RaceStatus
-
-
 class RateSegment:
     def __init__(self, status, start_time):
         self.status = status

@@ -1,11 +1,11 @@
 import pytest
+from helpers import set_fixed_times
 
 from application.change_race_status import ChangeRaceStatus
 from application.race_session import RaceSession
 from application.start_race import StartRace
 from domain.race import Race
 from domain.race_status import RaceStatus
-from helpers import set_fixed_times
 
 
 def test_change_status_updates_the_race_status():

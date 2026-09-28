@@ -1,11 +1,11 @@
 import pytest
+from helpers import build_finished_race
 
 from application.finish_race import FinishRace
 from application.race_session import RaceSession
 from application.start_race import StartRace
 from domain.race import Race
 from domain.race_status import RaceStatus
-from helpers import build_finished_race
 from interfaces.formatting import format_amount, format_duration
 
 
@@ -69,49 +69,61 @@ def test_total_duration_is_the_sum_of_the_segments():
     assert race.get_duration_seconds() == pytest.approx(60)
 
 
-def test_use_case_finishes_the_active_race():
+def test_use_case_finishes_the_active_race(repository):
     session = RaceSession()
     StartRace(session).execute()
 
-    race = FinishRace(session).execute()
+    race = FinishRace(session, repository).execute()
 
     assert race is not None
     assert race.end_time is not None
 
 
-def test_use_case_frees_the_session():
+def test_use_case_frees_the_session(repository):
     session = RaceSession()
     StartRace(session).execute()
 
-    FinishRace(session).execute()
+    FinishRace(session, repository).execute()
 
     assert session.active_race is None
 
 
-def test_a_new_race_can_start_after_finishing():
+def test_a_new_race_can_start_after_finishing(repository):
     session = RaceSession()
     StartRace(session).execute()
-    FinishRace(session).execute()
+    FinishRace(session, repository).execute()
 
     new_race = StartRace(session).execute()
 
     assert new_race is not None
 
 
-def test_finish_without_active_race_returns_none():
+def test_finish_without_active_race_returns_none(repository):
     session = RaceSession()
-    assert FinishRace(session).execute() is None
+    assert FinishRace(session, repository).execute() is None
 
 
-def test_finish_without_active_race_shows_a_message(capsys):
-    FinishRace(RaceSession()).execute()
+def test_finish_without_active_race_shows_a_message(repository, capsys):
+    FinishRace(RaceSession(), repository).execute()
     printed = capsys.readouterr().out
     assert "no hay ninguna carrera por terminar.\n" in printed.lower()
 
 
+def test_finished_race_is_saved_in_the_history(repository):
+    session = RaceSession()
+    StartRace(session).execute()
+
+    race = FinishRace(session, repository).execute()
+
+    records = repository.get_all()
+    assert len(records) == 1
+    assert records[0].start_time == race.start_time
+    assert records[0].end_time == race.end_time
+
+
 @pytest.mark.parametrize(
     "amount, expected",
-    [(2.1, "2.10 €"), (0, "0.00 €"), (0.456, "0.46 €"), (12, "12.00 €")],
+    [(2.1, "2.10€"), (0, "0.00€"), (0.456, "0.46€"), (12, "12.00€")],
 )
 def test_format_amount(amount, expected):
     assert format_amount(amount) == expected

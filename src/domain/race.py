@@ -1,8 +1,9 @@
 from datetime import datetime
+
+from .race_record import RaceRecord
 from .race_status import RaceStatus
 from .rate_segment import RateSegment
 from .rates import RATE_PER_SECOND
-from .race_record import RaceRecord
 
 
 class Race:
