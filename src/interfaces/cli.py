@@ -55,7 +55,7 @@ class Cli:
         self._run_race_screen()
 
     def _run_race_screen(self):
-        print("Flecha arriba = en movimiento | Flecha abajo = parado | Q = salir\n")
+        print("Flecha arriba = en movimiento | Flecha abajo = parado | Q = Terminar carrera\n")
 
         last_refresh = 0
 
@@ -91,7 +91,7 @@ class Cli:
     def _draw_status(self):
         race = self.session.active_race
         amount = format_amount(race.get_current_amount())
-        line = f"Estado: {race.status.value:<8} | Cantidad: {amount} €"
+        line = f"Estado: {race.status.value:<8} | Cantidad: {amount}"
         print("\r" + line + " " * 10, end="", flush=True)
 
     def _show_summary(self, race):
