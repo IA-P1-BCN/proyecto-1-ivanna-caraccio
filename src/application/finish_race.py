@@ -11,7 +11,6 @@ class FinishRace:
             return None
 
         race.finish()
-        self.session.finished_races.append(race)
         self.session.active_race = None
         
         try:
