@@ -12,3 +12,7 @@ class RateSegment:
 
     def close(self, end_time):
         self.end_time = end_time
+
+    def get_duration_seconds(self, now):
+        end = self.end_time if self.end_time is not None else now
+        return (end - self.start_time).total_seconds()
