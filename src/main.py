@@ -3,7 +3,7 @@ from pathlib import Path
 
 from infrastructure.logging_config import get_logger, setup_logging
 from infrastructure.race_history_repository import RaceHistoryRepository
-from infrastructure.rates_config import RatesConfig
+from infrastructure.rates_config import ConfigError, RatesConfig
 from interfaces.cli import Cli
 
 HISTORY_FILE = Path(__file__).resolve().parent.parent / \
@@ -18,7 +18,15 @@ def main():
     setup_logging()
     logger.info("Application started")
 
-    rates = RatesConfig(RATES_FILE).load()
+    try:
+        rates = RatesConfig(RATES_FILE).load()
+    except ConfigError as error:
+        logger.error("Configuration error: %s", error)
+        logger.info("Application closed")
+        print(f"Error de configuración: {error.user_message}")
+        print("Corrige el fichero de configuración y vuelve a intentarlo.")
+        return 1
+
     logger.info("Rates loaded: stopped=%s moving=%s",
                 rates.stopped, rates.moving)
 

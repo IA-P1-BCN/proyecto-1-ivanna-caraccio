@@ -1,4 +1,5 @@
 import json
+import math
 from pathlib import Path
 
 from domain.rates import Rates
@@ -64,4 +65,26 @@ class RatesConfig:
                 f"configuración: {self.path}",
             )
 
-        return Rates(stopped=data["stopped"], moving=data["moving"])
+        return Rates(
+            stopped=self._validate_value("stopped", data["stopped"]),
+            moving=self._validate_value("moving", data["moving"]),
+        )
+
+    def _validate_value(self, key, value):
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ConfigError(
+                f"Rates config key '{key}' must be a number: "
+                f"{self.path} (got {value!r})",
+                f"La tarifa '{key}' debe ser un número mayor que 0: "
+                f"{self.path} (valor recibido: {value!r})",
+            )
+
+        if not math.isfinite(value) or value <= 0:
+            raise ConfigError(
+                f"Rates config key '{key}' must be a finite number "
+                f"greater than 0: {self.path} (got {value!r})",
+                f"La tarifa '{key}' debe ser un número mayor que 0: "
+                f"{self.path} (valor recibido: {value!r})",
+            )
+
+        return float(value)
