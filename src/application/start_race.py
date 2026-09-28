@@ -2,14 +2,14 @@ from domain.race import Race
 
 
 class StartRace:
-    def __init__(self):
-        self.active_race = None
+    def __init__(self, session):
+        self.session = session
     
     def execute(self):
-        if self.active_race is not None:
+        if self.session.active_race is not None:
             print("Una carrera ya está en curso")
             return None
         
-        self.active_race = Race()
+        self.session.active_race = Race()
         print("Empieza la carrera")
-        return self.active_race
+        return self.session.active_race
