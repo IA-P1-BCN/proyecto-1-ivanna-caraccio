@@ -5,12 +5,14 @@ from application.race_session import RaceSession
 from application.start_race import StartRace
 from application.change_race_status import ChangeRaceStatus
 from application.finish_race import FinishRace
+from application.get_today_history import GetTodayHistory
 from domain.race_status import RaceStatus
 from .formatting import format_amount, format_duration
 
 ARROW_PREFIXES = ("\x00", "\xe0")
 CODE_UP = "H"
 CODE_DOWN = "P"
+
 
 def read_key():
     if not msvcrt.kbhit():
@@ -28,24 +30,29 @@ def read_key():
 
     return key.lower()
 
+
 class Cli:
-    def __init__(self):
+    def __init__(self, repository):
         self.session = RaceSession()
         self.start_race = StartRace(self.session)
         self.change_race_status = ChangeRaceStatus(self.session)
-        self.finish_race = FinishRace(self.session)
-    
+        self.finish_race = FinishRace(self.session, repository)
+        self.get_today_history = GetTodayHistory(repository)
+
     def run(self):
         while True:
             print("\n=== TAXITECH ===")
             print("1. Iniciar carrera")
-            print("2. Salir")
+            print("2. Ver historial de hoy")
+            print("3. Salir")
             choice = input("Elige una opción (número): ").strip()
 
             if choice == "1":
                 self._start_race_flow()
             elif choice == "2":
-                print("¡Adiós!")
+                self._show_history()
+            elif choice == "3":
+                print("Cerrando el programa...")
                 break
             else:
                 print("Opción no válida.")
@@ -55,7 +62,8 @@ class Cli:
         self._run_race_screen()
 
     def _run_race_screen(self):
-        print("Flecha arriba = en movimiento | Flecha abajo = parado | Q = Terminar carrera\n")
+        print(
+            "Flecha arriba = en movimiento | Flecha abajo = parado | Q = Terminar carrera\n")
 
         last_refresh = 0
 
@@ -100,3 +108,26 @@ class Cli:
         print(f"Fin:      {race.end_time:%H:%M:%S}")
         print(f"Duración: {format_duration(race.get_duration_seconds())}")
         print(f"TOTAL:    {format_amount(race.get_current_amount())}")
+
+    def _show_history(self):
+        try:
+            records, total = self.get_today_history.execute()
+        except ValueError as error:
+            print(f"No se puede leer el historial: {error}")
+            return
+
+        print("\n--- CARRERAS DE HOY ---")
+        if not records:
+            print("Aún no hay carreras registradas.")
+            return
+
+        print(f"{'#':<4}{'Inicio':<10}{'Fin':<10}{'Duración':<10}Cantidad")
+        for number, record in enumerate(records, start=1):
+            start = record.start_time.strftime("%H:%M:%S")
+            end = record.end_time.strftime("%H:%M:%S")
+            duration = format_duration(record.duration_seconds)
+            amount = format_amount(record.total_amount)
+            print(f"{number:<4}{start:<10}{end:<10}{duration:<10}{amount}")
+
+        print(f"\nCarreras: {len(records)}")
+        print(f"TOTAL ACUMULADO: {format_amount(total)}")
