@@ -3,15 +3,16 @@ from datetime import datetime
 from .race_record import RaceRecord
 from .race_status import RaceStatus
 from .rate_segment import RateSegment
-from .rates import RATE_PER_SECOND
+from .rates import DEFAULT_RATES
 
 
 class Race:
-    def __init__(self):
+    def __init__(self, rates=None):
         self._start_time = datetime.now()
         self._end_time = None
         self._status = RaceStatus.STOPPED
         self._rate_segments = [RateSegment(self._status, self._start_time)]
+        self._rates = DEFAULT_RATES if rates is None else rates
 
     @property
     def start_time(self):
@@ -42,7 +43,7 @@ class Race:
         total = 0.0
 
         for segment in self._rate_segments:
-            price_per_second = RATE_PER_SECOND[segment.status]
+            price_per_second = self._rates.for_status(segment.status)
             total += segment.get_duration_seconds(now) * price_per_second
 
         return total

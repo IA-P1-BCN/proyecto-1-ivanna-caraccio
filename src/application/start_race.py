@@ -5,8 +5,9 @@ logger = get_logger(__name__)
 
 
 class StartRace:
-    def __init__(self, session):
+    def __init__(self, session, rates=None):
         self.session = session
+        self.rates = rates
 
     def execute(self):
         if self.session.active_race is not None:
@@ -14,7 +15,7 @@ class StartRace:
             print("Una carrera ya está en curso")
             return None
 
-        self.session.active_race = Race()
+        self.session.active_race = Race(self.rates)
         logger.info("Race started at %s (status: %s)",
                     self.session.active_race.start_time,
                     self.session.active_race.status.value)
