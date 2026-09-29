@@ -10,6 +10,19 @@ from domain.race_status import RaceStatus
 from infrastructure.logging_config import get_logger
 
 from .formatting import format_amount, format_duration, format_history_table
+from .theme import (
+    ACCENT,
+    ACCENT_DIM,
+    BG,
+    BUTTON_ACTIVE,
+    BUTTON_BG,
+    DANGER,
+    ENTRY_BG,
+    FOREGROUND,
+    SURFACE,
+    apply_theme,
+    button_kwargs,
+)
 
 logger = get_logger(__name__)
 
@@ -65,6 +78,7 @@ class TaxiGui:
     @staticmethod
     def _create_root():
         root = tk.Tk()
+        apply_theme(root)
         root.title(WINDOW_TITLE)
         root.minsize(MIN_WIDTH, MIN_HEIGHT)
         root.geometry(f"{MIN_WIDTH}x{MIN_HEIGHT}")
@@ -73,16 +87,28 @@ class TaxiGui:
     def _login(self):
         dialog = tk.Toplevel(self.root)
         dialog.title(LOGIN_TITLE)
+        dialog.configure(bg=BG)
         dialog.resizable(False, False)
         dialog.grab_set()
 
         tk.Label(dialog, text="Introduce la contraseña:",
-                 font=STATUS_FONT).pack(padx=40, pady=(26, 8))
+                 font=STATUS_FONT, bg=BG, fg=FOREGROUND).pack(
+            padx=40, pady=(26, 8)
+        )
 
-        password_entry = tk.Entry(dialog, show="*", font=INPUT_FONT, width=22)
+        password_entry = tk.Entry(
+            dialog,
+            show="*",
+            font=INPUT_FONT,
+            width=22,
+            bg=ENTRY_BG,
+            fg=FOREGROUND,
+            insertbackground=FOREGROUND,
+            relief="flat",
+        )
         password_entry.pack(padx=40, pady=4)
 
-        error_label = tk.Label(dialog, text="", fg="#c0392b",
+        error_label = tk.Label(dialog, text="", bg=BG, fg=DANGER,
                                font=("Segoe UI", 10, "bold"))
         error_label.pack(padx=40, pady=(4, 10))
 
@@ -109,13 +135,16 @@ class TaxiGui:
             logger.info("Access cancelled by the user")
             dialog.destroy()
 
-        buttons = tk.Frame(dialog)
+        buttons = tk.Frame(dialog, bg=BG)
         buttons.pack(padx=40, pady=(0, 24), fill="x")
         tk.Button(buttons, text="ENTRAR", font=BUTTON_FONT,
-                  command=submit).pack(side="left", expand=True, fill="x")
+                  command=submit, **button_kwargs()).pack(
+            side="left", expand=True, fill="x"
+        )
         tk.Button(buttons, text="SALIR", font=BUTTON_FONT,
-                  command=cancel).pack(side="left", expand=True, fill="x",
-                                       padx=(10, 0))
+                  command=cancel, **button_kwargs()).pack(
+            side="left", expand=True, fill="x", padx=(10, 0)
+        )
 
         dialog.bind("<Return>", submit)
         dialog.protocol("WM_DELETE_WINDOW", cancel)
@@ -131,13 +160,15 @@ class TaxiGui:
         for row in range(1, 6):
             self.root.rowconfigure(row, weight=1)
 
-        status_frame = tk.Frame(self.root, pady=12)
+        status_frame = tk.Frame(self.root, pady=12, bg=SURFACE)
         status_frame.grid(row=0, column=0, columnspan=2, sticky="ew")
 
         self.status_label = tk.Label(
             status_frame,
             text=f"Estado: {NO_RACE_STATUS}",
             font=STATUS_FONT,
+            bg=SURFACE,
+            fg=FOREGROUND,
         )
         self.status_label.pack()
 
@@ -145,7 +176,8 @@ class TaxiGui:
             status_frame,
             text=format_amount(0),
             font=AMOUNT_FONT,
-            fg="#1a7f37",
+            bg=SURFACE,
+            fg=ACCENT,
         )
         self.amount_label.pack()
 
@@ -181,6 +213,7 @@ class TaxiGui:
             font=BUTTON_FONT,
             command=command,
             pady=BUTTON_PADY,
+            **button_kwargs(),
         )
         button.grid(
             row=row,
@@ -228,16 +261,21 @@ class TaxiGui:
 
         window = tk.Toplevel(self.root)
         window.title(HISTORY_TITLE)
+        window.configure(bg=BG)
 
         body = self._history_body(records, total)
         text = tk.Text(window, font=TEXT_FONT, padx=14, pady=14,
-                       width=46, height=min(len(records) + 6, 20))
+                       width=46, height=min(len(records) + 6, 20),
+                       bg=ENTRY_BG, fg=FOREGROUND,
+                       insertbackground=FOREGROUND,
+                       selectbackground=ACCENT, selectforeground=BG,
+                       relief="flat")
         text.insert("end", body)
         text.configure(state="disabled")
         text.pack(fill="both", expand=True)
 
         tk.Button(window, text="CERRAR", font=BUTTON_FONT,
-                  command=window.destroy).pack(
+                  command=window.destroy, **button_kwargs()).pack(
             padx=14, pady=12, fill="x"
         )
         self._center(window)
@@ -311,12 +349,21 @@ class TaxiGui:
         self._set_enabled(self.moving_button, active)
         self._set_enabled(self.finish_button, active)
 
-        self.stopped_button.configure(
-            text=self._status_text(RaceStatus.STOPPED, race)
-        )
-        self.moving_button.configure(
-            text=self._status_text(RaceStatus.MOVING, race)
-        )
+        self._style_status_button(self.stopped_button, RaceStatus.STOPPED,
+                                  race)
+        self._style_status_button(self.moving_button, RaceStatus.MOVING,
+                                  race)
+
+    def _style_status_button(self, button, status, race):
+        is_current = race is not None and race.status == status
+        button.configure(text=self._status_text(status, race))
+
+        if is_current:
+            button.configure(bg=ACCENT_DIM, fg=ACCENT,
+                             activebackground=ACCENT_DIM)
+        else:
+            button.configure(bg=BUTTON_BG, fg=FOREGROUND,
+                             activebackground=BUTTON_ACTIVE)
 
     @staticmethod
     def _set_enabled(button, enabled):
