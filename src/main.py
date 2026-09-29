@@ -8,6 +8,7 @@ from infrastructure.logging_config import get_logger, setup_logging
 from infrastructure.race_history_repository import RaceHistoryRepository
 from infrastructure.rates_config import RatesConfig
 from interfaces.cli import Cli
+from interfaces.gui import TaxiGui
 
 HISTORY_FILE = Path(__file__).resolve().parent.parent / \
     "data" / "race_history.json"
@@ -41,7 +42,10 @@ def main():
     validate_access = ValidateAccess(password_hash)
 
     try:
-        Cli(repository, rates, validate_access).run()
+        if "--cli" in sys.argv[1:]:
+            Cli(repository, rates, validate_access).run()
+        else:
+            TaxiGui(repository, rates, validate_access).run()
     except KeyboardInterrupt:
         logger.info("Application interrupted by the user")
     except Exception:
