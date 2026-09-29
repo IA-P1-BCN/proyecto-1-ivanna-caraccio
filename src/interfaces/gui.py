@@ -59,6 +59,7 @@ class TaxiGui:
         self.stopped_button = None
         self.moving_button = None
         self.finish_button = None
+        self.history_button = None
 
     def run(self):
         logger.info("GUI started")
@@ -252,7 +253,7 @@ class TaxiGui:
         self.finish_button = self._make_button(
             "FINALIZAR CARRERA", self._finish, row=3, columnspan=2
         )
-        self._make_button(
+        self.history_button = self._make_button(
             "HISTÓRICO DE HOY", self._show_history, row=4, columnspan=2
         )
         self._make_button("SALIR", self._close, row=5, columnspan=2)
@@ -414,6 +415,7 @@ class TaxiGui:
         self._set_enabled(self.stopped_button, active)
         self._set_enabled(self.moving_button, active)
         self._set_enabled(self.finish_button, active)
+        self._set_enabled(self.history_button, not active)
 
         self._style_status_button(self.stopped_button, RaceStatus.STOPPED,
                                   race)
