@@ -73,6 +73,7 @@ class TaxiGui:
 
         self.root.deiconify()
         self._build_window()
+        self._center(self.root)
         self.root.protocol("WM_DELETE_WINDOW", self._close)
         self._schedule_refresh()
         self.root.mainloop()
