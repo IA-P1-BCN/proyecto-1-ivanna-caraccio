@@ -23,6 +23,8 @@ STATUS_FONT = ("Segoe UI", 14, "bold")
 BUTTON_FONT = ("Segoe UI", 16, "bold")
 BUTTON_PADY = 18
 REFRESH_MS = 1000
+MIN_WIDTH = 480
+MIN_HEIGHT = 640
 NO_RACE_STATUS = "—"
 ACTIVE_MARKER = "● "
 
@@ -46,8 +48,7 @@ class TaxiGui:
 
     def run(self):
         logger.info("GUI started")
-        self.root = tk.Tk()
-        self.root.title(WINDOW_TITLE)
+        self.root = self._create_root()
         self.root.withdraw()
 
         if not self._login():
@@ -60,6 +61,14 @@ class TaxiGui:
         self._schedule_refresh()
         self.root.mainloop()
         logger.info("GUI closed")
+
+    @staticmethod
+    def _create_root():
+        root = tk.Tk()
+        root.title(WINDOW_TITLE)
+        root.minsize(MIN_WIDTH, MIN_HEIGHT)
+        root.geometry(f"{MIN_WIDTH}x{MIN_HEIGHT}")
+        return root
 
     def _login(self):
         dialog = tk.Toplevel(self.root)
@@ -118,6 +127,11 @@ class TaxiGui:
         return result["granted"]
 
     def _build_window(self):
+        self.root.columnconfigure(0, weight=1, uniform="main")
+        self.root.columnconfigure(1, weight=1, uniform="main")
+        for row in range(1, 6):
+            self.root.rowconfigure(row, weight=1)
+
         status_frame = tk.Frame(self.root, pady=12)
         status_frame.grid(row=0, column=0, columnspan=2, sticky="ew")
 
