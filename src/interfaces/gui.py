@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import messagebox
 
 from application.change_race_status import ChangeRaceStatus
 from application.finish_race import FinishRace
@@ -29,6 +28,8 @@ logger = get_logger(__name__)
 WINDOW_TITLE = "TAXITECH"
 LOGIN_TITLE = "ACCESO A TAXITECH"
 HISTORY_TITLE = "CARRERAS DE HOY"
+SUMMARY_TITLE = "CARRERA FINALIZADA"
+ERROR_TITLE = "ERROR"
 TEXT_FONT = ("Consolas", 12)
 INPUT_FONT = ("Segoe UI", 14)
 AMOUNT_FONT = ("Segoe UI", 32, "bold")
@@ -154,6 +155,58 @@ class TaxiGui:
 
         return result["granted"]
 
+    def _open_dialog(self, title):
+        dialog = tk.Toplevel(self.root)
+        dialog.title(title)
+        dialog.configure(bg=BG)
+        dialog.grab_set()
+        return dialog
+
+    def _show_error(self, message):
+        dialog = self._open_dialog(ERROR_TITLE)
+        dialog.resizable(False, False)
+
+        tk.Label(dialog, text=message, bg=BG, fg=FOREGROUND,
+                 font=STATUS_FONT, justify="left", wraplength=360).pack(
+            padx=30, pady=(24, 16)
+        )
+        tk.Button(dialog, text="ACEPTAR", font=BUTTON_FONT,
+                  command=dialog.destroy, **button_kwargs()).pack(
+            padx=30, pady=(0, 24), fill="x"
+        )
+        self._center(dialog)
+        dialog.wait_window()
+
+    def _ask_yes_no(self, message, title):
+        dialog = self._open_dialog(title)
+        dialog.resizable(False, False)
+        result = {"answer": False}
+
+        def close(answer):
+            result["answer"] = answer
+            dialog.destroy()
+
+        tk.Label(dialog, text=message, bg=BG, fg=FOREGROUND,
+                 font=STATUS_FONT, justify="left", wraplength=360).pack(
+            padx=30, pady=(24, 16)
+        )
+
+        buttons = tk.Frame(dialog, bg=BG)
+        buttons.pack(padx=30, pady=(0, 24), fill="x")
+        tk.Button(buttons, text="SÍ", font=BUTTON_FONT,
+                  command=lambda: close(True), **button_kwargs()).pack(
+            side="left", expand=True, fill="x"
+        )
+        tk.Button(buttons, text="NO", font=BUTTON_FONT,
+                  command=lambda: close(False), **button_kwargs()).pack(
+            side="left", expand=True, fill="x", padx=(10, 0)
+        )
+
+        dialog.protocol("WM_DELETE_WINDOW", lambda: close(False))
+        self._center(dialog)
+        dialog.wait_window()
+        return result["answer"]
+
     def _build_window(self):
         self.root.columnconfigure(0, weight=1, uniform="main")
         self.root.columnconfigure(1, weight=1, uniform="main")
@@ -239,24 +292,39 @@ class TaxiGui:
             self._show_summary(race)
         self._refresh()
 
-    @staticmethod
-    def _show_summary(race):
-        messagebox.showinfo(
-            "CARRERA FINALIZADA",
-            f"Inicio:    {race.start_time:%H:%M:%S}\n"
-            f"Fin:       {race.end_time:%H:%M:%S}\n"
-            f"Duración:  {format_duration(race.get_duration_seconds())}\n"
-            f"TOTAL:     {format_amount(race.get_current_amount())}",
+    def _show_summary(self, race):
+        dialog = self._open_dialog(SUMMARY_TITLE)
+        dialog.resizable(False, False)
+
+        details = tk.Frame(dialog, bg=SURFACE)
+        details.pack(padx=24, pady=(24, 6), fill="x")
+        for line in (
+            f"Inicio:    {race.start_time:%H:%M:%S}",
+            f"Fin:       {race.end_time:%H:%M:%S}",
+            f"Duración:  {format_duration(race.get_duration_seconds())}",
+        ):
+            tk.Label(details, text=line, bg=SURFACE, fg=FOREGROUND,
+                     font=STATUS_FONT, justify="left").pack(
+                padx=18, pady=5, anchor="w"
+            )
+
+        tk.Label(dialog, bg=BG, fg=ACCENT, font=AMOUNT_FONT,
+                 text=f"TOTAL  "
+                      f"{format_amount(race.get_current_amount())}").pack(
+            padx=24, pady=(10, 14)
         )
+        tk.Button(dialog, text="CERRAR", font=BUTTON_FONT,
+                  command=dialog.destroy, **button_kwargs()).pack(
+            padx=24, pady=(0, 24), fill="x"
+        )
+        self._center(dialog)
+        dialog.wait_window()
 
     def _show_history(self):
         try:
             records, total = self.get_today_history.execute()
         except ValueError as error:
-            messagebox.showerror(
-                WINDOW_TITLE,
-                f"No se puede leer el historial: {error}",
-            )
+            self._show_error(f"No se puede leer el historial: {error}")
             return
 
         window = tk.Toplevel(self.root)
@@ -298,25 +366,23 @@ class TaxiGui:
         y = (window.winfo_screenheight() - window.winfo_height()) // 2
         window.geometry(f"+{x}+{y}")
 
-    @staticmethod
-    def _safe(action):
+    def _safe(self, action):
         try:
             return action()
         except Exception:
             logger.exception("Unexpected error while running %s",
                              action.__name__)
-            messagebox.showerror(
-                WINDOW_TITLE,
+            self._show_error(
                 "Se ha producido un error. "
-                "Consulta el fichero de log para más detalles.",
+                "Consulta el fichero de log para más detalles."
             )
             return None
 
     def _close(self):
         if self.session.active_race is not None:
-            keep_going = messagebox.askyesno(
-                WINDOW_TITLE,
+            keep_going = self._ask_yes_no(
                 "Hay una carrera en curso. ¿Salir sin finalizarla?",
+                WINDOW_TITLE,
             )
             if not keep_going:
                 return
