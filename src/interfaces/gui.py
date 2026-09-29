@@ -74,7 +74,6 @@ class TaxiGui:
         dialog = tk.Toplevel(self.root)
         dialog.title(LOGIN_TITLE)
         dialog.resizable(False, False)
-        dialog.transient(self.root)
         dialog.grab_set()
 
         tk.Label(dialog, text="Introduce la contraseña:",
