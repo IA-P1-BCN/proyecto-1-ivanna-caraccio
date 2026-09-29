@@ -10,7 +10,7 @@ from application.start_race import StartRace
 from domain.race_status import RaceStatus
 from infrastructure.logging_config import get_logger
 
-from .formatting import format_amount, format_duration
+from .formatting import format_amount, format_duration, format_history_table
 
 logger = get_logger(__name__)
 
@@ -69,7 +69,8 @@ class Cli:
 
     def _login(self):
         print("=== ACCESO A TAXITECH ===")
-        print("Introduce la contraseña para usar el taxímetro o pulsa Enter para salir.")
+        print("Introduce la contraseña para usar el taxímetro "
+              "o pulsa Enter para salir.")
 
         while True:
             password = getpass.getpass("Contraseña: ")
@@ -159,13 +160,8 @@ class Cli:
             print("Aún no hay carreras registradas.")
             return
 
-        print(f"{'#':<4}{'Inicio':<10}{'Fin':<10}{'Duración':<10}Cantidad")
-        for number, record in enumerate(records, start=1):
-            start = record.start_time.strftime("%H:%M:%S")
-            end = record.end_time.strftime("%H:%M:%S")
-            duration = format_duration(record.duration_seconds)
-            amount = format_amount(record.total_amount)
-            print(f"{number:<4}{start:<10}{end:<10}{duration:<10}{amount}")
+        for line in format_history_table(records):
+            print(line)
 
         print(f"\nCarreras: {len(records)}")
         print(f"TOTAL ACUMULADO: {format_amount(total)}")
