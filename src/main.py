@@ -41,7 +41,12 @@ def main():
     validate_access = ValidateAccess(password_hash)
 
     try:
-        Cli(repository, rates, validate_access).run()
+        if "--gui" in sys.argv[1:]:
+            from interfaces.gui import TaxiGui
+
+            TaxiGui(repository, rates, validate_access).run()
+        else:
+            Cli(repository, rates, validate_access).run()
     except KeyboardInterrupt:
         logger.info("Application interrupted by the user")
     except Exception:

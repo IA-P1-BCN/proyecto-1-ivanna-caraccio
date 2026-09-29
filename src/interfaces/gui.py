@@ -9,11 +9,15 @@ from application.start_race import StartRace
 from domain.race_status import RaceStatus
 from infrastructure.logging_config import get_logger
 
-from .formatting import format_amount, format_duration
+from .formatting import format_amount, format_duration, format_history_table
 
 logger = get_logger(__name__)
 
 WINDOW_TITLE = "TAXITECH"
+LOGIN_TITLE = "ACCESO A TAXITECH"
+HISTORY_TITLE = "CARRERAS DE HOY"
+TEXT_FONT = ("Consolas", 12)
+INPUT_FONT = ("Segoe UI", 14)
 AMOUNT_FONT = ("Segoe UI", 32, "bold")
 STATUS_FONT = ("Segoe UI", 14, "bold")
 BUTTON_FONT = ("Segoe UI", 16, "bold")
@@ -43,9 +47,73 @@ class TaxiGui:
         logger.info("GUI started")
         self.root = tk.Tk()
         self.root.title(WINDOW_TITLE)
+        self.root.withdraw()
+
+        if not self._login():
+            self.root.destroy()
+            logger.info("GUI closed")
+            return
+
+        self.root.deiconify()
         self._build_window()
         self.root.mainloop()
         logger.info("GUI closed")
+
+    def _login(self):
+        dialog = tk.Toplevel(self.root)
+        dialog.title(LOGIN_TITLE)
+        dialog.resizable(False, False)
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        tk.Label(dialog, text="Introduce la contraseña:",
+                 font=STATUS_FONT).pack(padx=40, pady=(26, 8))
+
+        password_entry = tk.Entry(dialog, show="*", font=INPUT_FONT, width=22)
+        password_entry.pack(padx=40, pady=4)
+
+        error_label = tk.Label(dialog, text="", fg="#c0392b",
+                               font=("Segoe UI", 10, "bold"))
+        error_label.pack(padx=40, pady=(4, 10))
+
+        result = {"granted": False}
+
+        def submit(event=None):
+            password = password_entry.get()
+            if not password:
+                logger.info("Access cancelled by the user")
+                dialog.destroy()
+                return
+
+            if self.validate_access.execute(password):
+                result["granted"] = True
+                dialog.destroy()
+                return
+
+            error_label.configure(text="Contraseña incorrecta. "
+                                       "Acceso denegado.")
+            password_entry.delete(0, tk.END)
+            password_entry.focus_set()
+
+        def cancel():
+            logger.info("Access cancelled by the user")
+            dialog.destroy()
+
+        buttons = tk.Frame(dialog)
+        buttons.pack(padx=40, pady=(0, 24), fill="x")
+        tk.Button(buttons, text="ENTRAR", font=BUTTON_FONT,
+                  command=submit).pack(side="left", expand=True, fill="x")
+        tk.Button(buttons, text="SALIR", font=BUTTON_FONT,
+                  command=cancel).pack(side="left", expand=True, fill="x",
+                                       padx=(10, 0))
+
+        dialog.bind("<Return>", submit)
+        dialog.protocol("WM_DELETE_WINDOW", cancel)
+        password_entry.focus_set()
+        self._center(dialog)
+        dialog.wait_window()
+
+        return result["granted"]
 
     def _build_window(self):
         status_frame = tk.Frame(self.root, pady=12)
@@ -84,7 +152,10 @@ class TaxiGui:
         self.finish_button = self._make_button(
             "FINALIZAR CARRERA", self._finish, row=3, columnspan=2
         )
-        self._make_button("SALIR", self._close, row=4, columnspan=2)
+        self._make_button(
+            "HISTÓRICO DE HOY", self._show_history, row=4, columnspan=2
+        )
+        self._make_button("SALIR", self._close, row=5, columnspan=2)
 
         self._refresh()
 
@@ -129,6 +200,50 @@ class TaxiGui:
             f"Duración:  {format_duration(race.get_duration_seconds())}\n"
             f"TOTAL:     {format_amount(race.get_current_amount())}",
         )
+
+    def _show_history(self):
+        try:
+            records, total = self.get_today_history.execute()
+        except ValueError as error:
+            messagebox.showerror(
+                WINDOW_TITLE,
+                f"No se puede leer el historial: {error}",
+            )
+            return
+
+        window = tk.Toplevel(self.root)
+        window.title(HISTORY_TITLE)
+
+        body = self._history_body(records, total)
+        text = tk.Text(window, font=TEXT_FONT, padx=14, pady=14,
+                       width=46, height=min(len(records) + 6, 20))
+        text.insert("end", body)
+        text.configure(state="disabled")
+        text.pack(fill="both", expand=True)
+
+        tk.Button(window, text="CERRAR", font=BUTTON_FONT,
+                  command=window.destroy).pack(
+            padx=14, pady=12, fill="x"
+        )
+        self._center(window)
+
+    @staticmethod
+    def _history_body(records, total):
+        if not records:
+            return "Aún no hay carreras registradas.\n"
+
+        lines = format_history_table(records)
+        lines.append("")
+        lines.append(f"Carreras: {len(records)}")
+        lines.append(f"TOTAL ACUMULADO: {format_amount(total)}")
+        return "\n".join(lines) + "\n"
+
+    @staticmethod
+    def _center(window):
+        window.update_idletasks()
+        x = (window.winfo_screenwidth() - window.winfo_width()) // 2
+        y = (window.winfo_screenheight() - window.winfo_height()) // 2
+        window.geometry(f"+{x}+{y}")
 
     @staticmethod
     def _safe(action):
