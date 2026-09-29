@@ -69,7 +69,8 @@ class Cli:
 
     def _login(self):
         print("=== ACCESO A TAXITECH ===")
-        print("Introduce la contraseña para usar el taxímetro o pulsa Enter para salir.")
+        print("Introduce la contraseña para usar el taxímetro "
+              "o pulsa Enter para salir.")
 
         while True:
             password = getpass.getpass("Contraseña: ")
