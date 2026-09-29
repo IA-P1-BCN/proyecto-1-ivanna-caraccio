@@ -68,8 +68,8 @@ class Cli:
                 print("Opción no válida.")
 
     def _login(self):
-        print("=== ACCESO PROTEGIDO ===")
-        print("Introduce la contraseña para usar el taxímetro.")
+        print("=== ACCESO A TAXITECH ===")
+        print("Introduce la contraseña para usar el taxímetro o pulsa Enter para salir.")
 
         while True:
             password = getpass.getpass("Contraseña: ")
