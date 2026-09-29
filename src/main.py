@@ -1,15 +1,19 @@
 import sys
 from pathlib import Path
 
+from infrastructure.auth_config import AuthConfig
+from infrastructure.config_error import ConfigError
 from infrastructure.logging_config import get_logger, setup_logging
 from infrastructure.race_history_repository import RaceHistoryRepository
-from infrastructure.rates_config import ConfigError, RatesConfig
+from infrastructure.rates_config import RatesConfig
 from interfaces.cli import Cli
 
 HISTORY_FILE = Path(__file__).resolve().parent.parent / \
     "data" / "race_history.json"
 RATES_FILE = Path(__file__).resolve().parent.parent / \
     "config" / "rates.json"
+AUTH_FILE = Path(__file__).resolve().parent.parent / \
+    "config" / "auth.json"
 
 logger = get_logger(__name__)
 
@@ -29,6 +33,17 @@ def main():
 
     logger.info("Rates loaded: stopped=%s moving=%s",
                 rates.stopped, rates.moving)
+
+    try:
+        _password_hash = AuthConfig(AUTH_FILE).load()
+    except ConfigError as error:
+        logger.error("Configuration error: %s", error)
+        logger.info("Application closed")
+        print(f"Error de configuración: {error.user_message}")
+        print("Corrige el fichero de configuración y vuelve a intentarlo.")
+        return 1
+
+    logger.info("Password hash loaded")
 
     repository = RaceHistoryRepository(HISTORY_FILE)
 
