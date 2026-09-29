@@ -3,14 +3,9 @@ import math
 from pathlib import Path
 
 from domain.rates import Rates
+from infrastructure.config_error import ConfigError
 
 REQUIRED_KEYS = ("stopped", "moving")
-
-
-class ConfigError(Exception):
-    def __init__(self, message, user_message):
-        super().__init__(message)
-        self.user_message = user_message
 
 
 class RatesConfig:
