@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 
+from application.validate_access import ValidateAccess
 from infrastructure.auth_config import AuthConfig
 from infrastructure.config_error import ConfigError
 from infrastructure.logging_config import get_logger, setup_logging
@@ -24,6 +25,7 @@ def main():
 
     try:
         rates = RatesConfig(RATES_FILE).load()
+        password_hash = AuthConfig(AUTH_FILE).load()
     except ConfigError as error:
         logger.error("Configuration error: %s", error)
         logger.info("Application closed")
@@ -33,22 +35,13 @@ def main():
 
     logger.info("Rates loaded: stopped=%s moving=%s",
                 rates.stopped, rates.moving)
-
-    try:
-        _password_hash = AuthConfig(AUTH_FILE).load()
-    except ConfigError as error:
-        logger.error("Configuration error: %s", error)
-        logger.info("Application closed")
-        print(f"Error de configuración: {error.user_message}")
-        print("Corrige el fichero de configuración y vuelve a intentarlo.")
-        return 1
-
     logger.info("Password hash loaded")
 
     repository = RaceHistoryRepository(HISTORY_FILE)
+    validate_access = ValidateAccess(password_hash)
 
     try:
-        Cli(repository, rates).run()
+        Cli(repository, rates, validate_access).run()
     except KeyboardInterrupt:
         logger.info("Application interrupted by the user")
     except Exception:

@@ -1,3 +1,4 @@
+import getpass
 import msvcrt
 import time
 
@@ -36,14 +37,18 @@ def read_key():
 
 
 class Cli:
-    def __init__(self, repository, rates=None):
+    def __init__(self, repository, rates=None, validate_access=None):
         self.session = RaceSession()
         self.start_race = StartRace(self.session, rates)
         self.change_race_status = ChangeRaceStatus(self.session)
         self.finish_race = FinishRace(self.session, repository)
         self.get_today_history = GetTodayHistory(repository)
+        self.validate_access = validate_access
 
     def run(self):
+        if not self._login():
+            return
+
         while True:
             print("\n=== TAXITECH ===")
             print("1. Iniciar carrera")
@@ -61,6 +66,24 @@ class Cli:
                 break
             else:
                 print("Opción no válida.")
+
+    def _login(self):
+        print("=== ACCESO PROTEGIDO ===")
+        print("Introduce la contraseña para usar el taxímetro.")
+
+        while True:
+            password = getpass.getpass("Contraseña: ")
+
+            if not password:
+                logger.info("Access cancelled by the user")
+                print("Saliendo del programa...")
+                return False
+
+            if self.validate_access.execute(password):
+                print("Acceso concedido.")
+                return True
+
+            print("Contraseña incorrecta. Acceso denegado.")
 
     @staticmethod
     def _safe(action):
