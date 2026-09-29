@@ -15,11 +15,11 @@ y estado en tiempo real, ventana usable en tablet) sin añadir dependencias al
 proyecto, manteniendo el enfoque stdlib del prototipo y las restricciones de
 SOLID/DRY de AGENTS.md.
 
-### Cómo ejecutar la interfaz gráfica
+### Cómo ejecutar la interfaz
 
 ```bash
-python src/main.py --gui   # interfaz gráfica (Tkinter)
-python src/main.py         # interfaz de terminal (CLI), por defecto
+python src/main.py         # interfaz gráfica (Tkinter), por defecto
+python src/main.py --cli   # interfaz de terminal (CLI)
 ```
 
 Ambas interfaces piden la contraseña al arrancar (US-08).
