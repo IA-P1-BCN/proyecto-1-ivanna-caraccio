@@ -73,6 +73,7 @@ class TaxiGui:
 
         self.root.deiconify()
         self._build_window()
+        self.root.protocol("WM_DELETE_WINDOW", self._close)
         self._schedule_refresh()
         self.root.mainloop()
         logger.info("GUI closed")
@@ -382,11 +383,14 @@ class TaxiGui:
     def _close(self):
         if self.session.active_race is not None:
             keep_going = self._ask_yes_no(
-                "Hay una carrera en curso. ¿Salir sin finalizarla?",
+                "Hay una carrera en curso. ¿Finalizarla, guardarla en el "
+                "histórico y salir?",
                 WINDOW_TITLE,
             )
             if not keep_going:
                 return
+
+            self._safe(self.finish_race.execute)
 
         logger.info("Exit option chosen by the user")
         self.root.destroy()
