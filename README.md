@@ -17,8 +17,6 @@ interfaces: a touch-friendly **GUI** with big buttons (default) and a classic
 ![Tkinter](https://img.shields.io/badge/GUI-Tkinter-000000?logo=tcl&logoColor=white)
 ![pytest](https://img.shields.io/badge/tested%20with-pytest-262522?logo=pytest&logoColor=white)
 ![Ruff](https://img.shields.io/badge/linter-Ruff-D7FF64?logo=ruff&logoColor=black)
-![GitHub Issues](https://img.shields.io/github/issues/IA-P1-BCN/proyecto-1-ivanna-caraccio)
-![GitHub Pull Requests](https://img.shields.io/github/issues-pr/IA-P1-BCN/proyecto-1-ivanna-caraccio)
 
 | Layer | Technology |
 |---|---|
@@ -223,3 +221,21 @@ and trivial to inspect (and the repository interface makes it swappable later).
 
 Fares are read from `config/rates.json` (US-07), so changing a price never
 requires touching (and possibly breaking) the business logic.
+
+---
+
+## Future Implementations
+
+The next milestone is to evolve the prototype into a connected application:
+
+- **REST API with FastAPI** — the app will consume a FastAPI service built on
+  top of a database created specifically for this software, instead of talking
+  directly to files.
+- **JSON → database migration** — race history and configuration will move
+  from JSON files (`data/`, `config/`) to reading/writing entities in that
+  database, through the existing repository interfaces in `infrastructure/`,
+  so the swap stays invisible to `domain/` and `application/`.
+- **Web panel for the fleet manager** — a dashboard served by the same
+  backend and accessible from any browser, so the person in charge of the
+  fleet can check the race history **without installing anything**, including
+  **previous days** (today the GUI/CLI only show today's history).
