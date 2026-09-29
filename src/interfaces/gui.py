@@ -22,6 +22,7 @@ AMOUNT_FONT = ("Segoe UI", 32, "bold")
 STATUS_FONT = ("Segoe UI", 14, "bold")
 BUTTON_FONT = ("Segoe UI", 16, "bold")
 BUTTON_PADY = 18
+REFRESH_MS = 1000
 NO_RACE_STATUS = "—"
 ACTIVE_MARKER = "● "
 
@@ -56,6 +57,7 @@ class TaxiGui:
 
         self.root.deiconify()
         self._build_window()
+        self._schedule_refresh()
         self.root.mainloop()
         logger.info("GUI closed")
 
@@ -270,6 +272,10 @@ class TaxiGui:
 
         logger.info("Exit option chosen by the user")
         self.root.destroy()
+
+    def _schedule_refresh(self):
+        self._refresh()
+        self.root.after(REFRESH_MS, self._schedule_refresh)
 
     def _refresh(self):
         race = self.session.active_race
