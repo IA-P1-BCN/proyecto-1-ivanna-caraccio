@@ -239,3 +239,14 @@ The next milestone is to evolve the prototype into a connected application:
   backend and accessible from any browser, so the person in charge of the
   fleet can check the race history **without installing anything**, including
   **previous days** (today the GUI/CLI only show today's history).
+
+---
+
+## Author
+
+**Ivanna Caraccio** ([@IvannaRCA](https://github.com/IvannaRCA))
+
+## License
+
+This project is released for **educational purposes only** as part of the
+coursework at **IA School — Factoria F5**.
