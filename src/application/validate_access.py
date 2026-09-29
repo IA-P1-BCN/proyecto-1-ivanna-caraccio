@@ -1,7 +1,7 @@
 import hmac
 
 from domain.password import hash_password
-from infrastructure.logging_config import get_logger
+from infrastructure.logging_config import get_logger, register_sensitive_value
 
 logger = get_logger(__name__)
 
@@ -15,6 +15,7 @@ class ValidateAccess:
             logger.warning("Access denied: empty password")
             return False
 
+        register_sensitive_value(password)
         granted = hmac.compare_digest(
             hash_password(password), self.password_hash
         )
