@@ -28,5 +28,17 @@
     "end_time": "2026-09-29T15:21:15.379138",
     "duration_seconds": 40.21,
     "total_amount": 1.56
+  },
+  {
+    "start_time": "2026-09-30T09:24:17.623612",
+    "end_time": "2026-09-30T09:24:46.833402",
+    "duration_seconds": 29.21,
+    "total_amount": 0.83
+  },
+  {
+    "start_time": "2026-09-30T09:24:57.604546",
+    "end_time": "2026-09-30T09:25:18.353620",
+    "duration_seconds": 20.75,
+    "total_amount": 0.47
   }
 ]
