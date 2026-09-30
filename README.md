@@ -109,6 +109,9 @@ Both interfaces ask for the password on startup (default: `taxi123`).
 3. **FINALIZAR CARRERA** — a summary shows the totals and the race is saved.
 4. **HISTÓRICO DE HOY** — review today's races and the accumulated income.
 5. **SALIR** (or the window ✕ button) — any active race is finished and saved first.
+<br><br>
+
+![TaxiTech application](docs/app.png)
 
 ### Quality checks
 
@@ -117,9 +120,11 @@ python -m pytest -q   # run the test suite
 ruff check .          # lint
 ```
 
+![Example of running tests](docs/run_tests.png)
+
 ---
 
-## GitHub Projects
+## Github Projects
 
 Work is organized on the **"P1 IA - Taximetro"** project board, driven by the
 spec in [`docs/taxitech-backlog.md`](docs/taxitech-backlog.md):
